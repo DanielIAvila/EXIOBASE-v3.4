@@ -3,6 +3,21 @@
 Created on Wed Oct 10 16:28:17 2018
 
 @author: DanielAvila, based on Arjan de Koning's code
+
+This code process Exiobase v3.4 (industry by industry) as time series (1995 - 2011). It saves, if specified, the files in a pickle format.
+You will get then as result:
+    direct_satelliteYEAR.pkl
+    iotYEAR.pkl
+    meYEAR.pkl
+    mmYEAR.pkl
+    mmb_finalYEAR.pkl
+    mrYEAR.pkl
+    mwYEAR.pkl
+    myYEAR.pkl
+    satelliteYEAR.pkl
+    wYEAR.pkl
+    x_outSYEAR.pkl
+    YYEAR.pkl
 """
 
 import os
