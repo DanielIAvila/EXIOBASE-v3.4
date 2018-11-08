@@ -5,4 +5,4 @@ This repository intends to help Industrial Ecologists interested in Environmenta
 
 In the coming months, I will add some codes I am writing to merge SUTs from Canada, USA and Mexico (NAFTA signatory countries) and link these to EXIOBASE. 
 
-This work intends to help me to publish some articles in my "academic" and professional life.
+This work intends to help me to publish some articles in my "academic" and professional life. Feel free to share and use this code, I do not know if a cite is required; but if you think I can contribute to your work let me know. 
