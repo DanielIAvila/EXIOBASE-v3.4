@@ -85,7 +85,6 @@ def process_exiobase(raw_data_dir, clean_data_dir, year, condition=True):
     mm = m.iloc[energy_index:materials_index, :] # resources (materials)
     mw = m.iloc[materials_index:water_index, :] # resources (water)
  
-    # This needs to be modified to make it more efficient!!
     if condition == True:
         return iot, final_demands, x_out, x_outS, satellite, direct_satellite, w, me, mr, my, mm, mw
     if condition == False:
@@ -143,5 +142,5 @@ def time_Series(yearOne, yearTwo, raw_data_dir, clean_data_dir, variables, cntr_
         mm = read_pickle(clean_data_dir,filenames[i][1])
         resources_impact(x_out, mm, cntr_cnt, ind_cnt, clean_data_dir, j, condition=False)    
 
-time_Series(2008, 2012, raw_data_dir, clean_data_dir, variables, cntr_cnt, ind_cnt)
+time_Series(1995, 2012, raw_data_dir, clean_data_dir, variables, cntr_cnt, ind_cnt)
 
