@@ -30,19 +30,12 @@ import gc
 
 os.getcwd()
 
-years = [1995, 2011]
+years = [1995, 2012]
 raw_data_dir = os.path.join('..', 'data', 'raw')
 clean_data_dir = os.path.join('..', 'data', 'clean')
-iot_filename = 'A.txt'
-final_demand_filename = 'Y.txt'
-satellite_filename = 'F.txt'
-direct_satellite_filename = 'F_hh.txt'
-satellite_labels_filename = 'unit.txt'
-variables = ['x_outS', 'mm']
-ind_cnt = 163
-cntr_cnt = 49
-dmnd_cnt = 7
 
+variables = ['x_outS', 'mm'] # These variables were specifically named for the Circularity Gap Report for Circular Economy
+                             # the second element in the list can be any of the available extensions in Exiobase, mm = materials
 
 def read_file(filename, separated, header, index_col):
     with open(filename) as f:
@@ -50,16 +43,26 @@ def read_file(filename, separated, header, index_col):
         reader.astype(float)
     return reader
 
-def read_pickle(directory, filename): # (clean_data_dir + '/' + 'x_outS1995.pkl')
+def read_pickle(directory, filename):
+    """ """
     reader = pd.read_pickle(directory + '/' + str(filename) + '.pkl')
     return reader
 
 def save_pickle(directory, filename, year, data):
+    """  """
     data.to_pickle(directory + '/' + filename + str(year) + '.pkl')
   
 def process_exiobase(raw_data_dir, clean_data_dir, year, condition=True):
+    """  """
     
-    value_added_index = 9
+    iot_filename = 'A.txt'
+    final_demand_filename = 'Y.txt'
+    satellite_filename = 'F.txt'
+    direct_satellite_filename = 'F_hh.txt'
+    
+    ind_cnt = 163
+    cntr_cnt = 49
+    
     factor_inputs_index = 23
     emissions_index = 446
     resources_index = 466
@@ -118,7 +121,7 @@ def process_exiobase(raw_data_dir, clean_data_dir, year, condition=True):
 def resources_impact(data_output, data_resources, cntr_cnt, ind_cnt, clean_data_dir, year, condition=True):
     """ This function reads for a given year:
         - the total output (data_output)
-        - the environmental extension (data_resources)
+        - the environmental extension (material_resources)
         - the country and sector/industry count (cntr_cnt & ind_cnt)
         It returns the:
         - the environmental coefficient (mmb)
@@ -129,8 +132,8 @@ def resources_impact(data_output, data_resources, cntr_cnt, ind_cnt, clean_data_
     inv_x = np.diag(inv_x)    # Diagonal of the previous matrix
     
     # Total (grouped) resources, based on intermediate resources (kilo tonnes)
-    mmt = pd.DataFrame(data_resources.sum(0)).T           # Sums all rows and transpose it to a column
-    mmi = data_resources.div(mmt.iloc[0], axis='columns') # It divide each row by the total
+    mmt = pd.DataFrame(data_resources.sum(0)).T            # Sums all rows and transpose it to a column
+    mmi = data_resources.div(mmt.iloc[0], axis='columns')  # It divide each row by the total
     mmi.fillna(0, inplace=True)
     mmt = np.reshape(np.array(mmt), (cntr_cnt*ind_cnt, 1)) # It reshapes the array
     
@@ -145,17 +148,54 @@ def resources_impact(data_output, data_resources, cntr_cnt, ind_cnt, clean_data_
         save_pickle(clean_data_dir, 'mmb', year, mmb)
         save_pickle(clean_data_dir, 'mmb_final', year, mmb_final)
         
-def time_Series(yearOne, yearTwo, raw_data_dir, clean_data_dir, variables, cntr_cnt, ind_cnt):
+def extension_impact(data_output, data_resources, cntr_cnt, ind_cnt, clean_data_dir, year, lab='', lab2='', 
+                     condition=True):
+    """ This function reads for a given year:
+        - the total output (data_output)
+        - the environmental extension (any)
+        - the country and sector/industry count (cntr_cnt & ind_cnt)
+        It returns the:
+        - the environmental coefficient vector (mxb)
+        - the environmental requirement per industry/sector matrix (mxb_final)"""
+    
+    inv_x = 1/data_output     # Inverse matrix to calculate A, A = technical coefficient matrix
+    inv_x[inv_x == np.inf] =0 # It cleans all "inf" values and convert its to "0"
+    inv_x = np.diag(inv_x)    # Diagonal of the previous matrix
+    
+    # Total (grouped) resources, based on intermediate resources (units)
+    met = pd.DataFrame(data_resources.sum(0)).T           # Sums all rows and transpose it to a column
+    mei = data_resources.div(met.iloc[0], axis='columns') # It divide each row by the total
+    mei.fillna(0, inplace=True)
+    met = np.reshape(np.array(met), (cntr_cnt*ind_cnt, 1)) # It reshapes the array
+    
+    # Extension coefficient vector (unit/M EUR), based on intermediate resources
+    meb= pd.DataFrame(np.transpose(np.dot(np.transpose(met), inv_x)), index=None, columns=['Value'])
+    
+    meb_list = meb['Value'].tolist()
+    meb_final = mei.mul(meb_list, axis=1) # Extension coefficient matrix (unit/ M EUR), based on intermediate resources
+    if condition == True:
+        return meb, meb_final
+    if condition == False:
+        save_pickle(clean_data_dir, lab, year, meb)
+        save_pickle(clean_data_dir, lab2, year, meb_final)
+        
+def file_names(yearOne, yearTwo, variables):
+    """ """
+    
     filenames = []
     for i in np.arange(yearOne, yearTwo):
         file_x, file_mm = variables[0] + str(i) , variables[1] + str(i)
-        filenames.append([file_x, file_mm])    
+        filenames.append([file_x, file_mm]) 
         
+    return filenames        
+  
+def time_Series(yearOne, yearTwo, raw_data_dir, clean_data_dir, filenames, cntr_cnt, ind_cnt):    
+    """ """ 
     for i, j in enumerate(np.arange(yearOne, yearTwo)):
         process_exiobase(raw_data_dir, clean_data_dir, j, condition=False)
         x_out = read_pickle(clean_data_dir,filenames[i][0])
         mm = read_pickle(clean_data_dir,filenames[i][1])
         resources_impact(x_out, mm, cntr_cnt, ind_cnt, clean_data_dir, j, condition=False)    
 
-time_Series(1995, 2012, raw_data_dir, clean_data_dir, variables, cntr_cnt, ind_cnt)
+time_Series(1995, 2012, raw_data_dir, clean_data_dir, filenames, cntr_cnt, ind_cnt)
 
