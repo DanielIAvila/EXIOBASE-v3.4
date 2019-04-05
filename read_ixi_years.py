@@ -37,6 +37,9 @@ clean_data_dir = os.path.join('..', 'data', 'clean')
 variables = ['x_outS', 'mm'] # These variables were specifically named for the Circularity Gap Report for Circular Economy
                              # the second element in the list can be any of the available extensions in Exiobase, mm = materials
 
+ind_cnt = 163
+cntr_cnt = 49    
+    
 def read_file(filename, separated, header, index_col):
     with open(filename) as f:
         reader = pd.read_csv(f, sep=separated, header=header, index_col=index_col, encoding='utf-8')
@@ -197,5 +200,7 @@ def time_Series(yearOne, yearTwo, raw_data_dir, clean_data_dir, filenames, cntr_
         mm = read_pickle(clean_data_dir,filenames[i][1])
         resources_impact(x_out, mm, cntr_cnt, ind_cnt, clean_data_dir, j, condition=False)    
 
+        
+filenames = file_names(years[0], years[1], variables)
 time_Series(1995, 2012, raw_data_dir, clean_data_dir, filenames, cntr_cnt, ind_cnt)
 
