@@ -2,9 +2,15 @@
 """
 Created on Wed Oct 10 16:28:17 2018
 
-@author: DanielAvila, based on Arjan de Koning's code
+@author: DanielAvila, based on Arjan de Koning's code.
 
-This code process Exiobase v3.4 (industry by industry) as time series (1995 - 2011). It saves, if specified, the files in a pickle format.
+README:
+1. To run this code, you should have the script in a folder. Within this folder create two new folders > raw & clean.
+2. In the "raw" folder, you should unzip EXIOBASE v3.4 years (folder per year), which you can download from https://exiobase.eu/.
+3. Run the code.
+
+This code process Exiobase v3.4 (industry by industry/sector by sector) as time series (1995 - 2011). 
+It saves, if specified, the files in a pickle format.
 You will get then as result:
     direct_satelliteYEAR.pkl
     iotYEAR.pkl
@@ -37,7 +43,7 @@ clean_data_dir = os.path.join('..', 'data', 'clean')
 variables = ['x_outS', 'mm'] # These variables were specifically named for the Circularity Gap Report for Circular Economy
                              # the second element in the list can be any of the available extensions in Exiobase, mm = materials
 
-ind_cnt = 163
+ind_cnt = 163 # Here you can change industry by industry, or sector by sector.
 cntr_cnt = 49    
     
 def read_file(filename, separated, header, index_col):
@@ -63,7 +69,7 @@ def process_exiobase(raw_data_dir, clean_data_dir, year, condition=True):
     satellite_filename = 'F.txt'
     direct_satellite_filename = 'F_hh.txt'
     
-    ind_cnt = 163
+    ind_cnt = 163 # Here you can change industry by industry, or sector by sector.
     cntr_cnt = 49
     
     factor_inputs_index = 23
@@ -183,7 +189,7 @@ def extension_impact(data_output, data_resources, cntr_cnt, ind_cnt, clean_data_
         save_pickle(clean_data_dir, lab2, year, meb_final)
         
 def file_names(yearOne, yearTwo, variables):
-    """ """
+    """ This function creates the filenames to use for the processed files (as output)."""
     
     filenames = []
     for i in np.arange(yearOne, yearTwo):
@@ -191,9 +197,9 @@ def file_names(yearOne, yearTwo, variables):
         filenames.append([file_x, file_mm]) 
         
     return filenames        
-  
+
 def time_Series(yearOne, yearTwo, raw_data_dir, clean_data_dir, filenames, cntr_cnt, ind_cnt):    
-    """ """ 
+    """ This function process all EXIOBASE as time series (from any given year to any other given year).""" 
     for i, j in enumerate(np.arange(yearOne, yearTwo)):
         process_exiobase(raw_data_dir, clean_data_dir, j, condition=False)
         x_out = read_pickle(clean_data_dir,filenames[i][0])
@@ -203,4 +209,3 @@ def time_Series(yearOne, yearTwo, raw_data_dir, clean_data_dir, filenames, cntr_
         
 filenames = file_names(years[0], years[1], variables)
 time_Series(1995, 2012, raw_data_dir, clean_data_dir, filenames, cntr_cnt, ind_cnt)
-
